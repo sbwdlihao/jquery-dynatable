@@ -71,6 +71,7 @@
       recordCountPlacement: 'after',
       paginationLinkTarget: null,
       paginationLinkPlacement: 'after',
+      paginationWrapName: 'ul',
       paginationClass: 'dynatable-pagination-links',
       paginationLinkClass: 'dynatable-page-link',
       paginationPrevClass: 'dynatable-page-prev',
@@ -86,7 +87,6 @@
       perPageTarget: null,
       perPagePlacement: 'before',
       perPageText: 'Show: ',
-      pageText: 'Pages: ',
       recordCountPageBoundTemplate: '{pageLowerBound} to {pageUpperBound} of',
       recordCountPageUnboundedTemplate: '{recordsShown} of',
       recordCountTotalTemplate: '{recordsQueryCount} {collectionName}',
@@ -254,10 +254,10 @@
       if (this.settings.dataset.ajaxUrl) {
         options.url = this.settings.dataset.ajaxUrl;
 
-      // If ajaxUrl is blank, then we're using the current page URL,
-      // we need to strip out any query, sort, or page data controlled by dynatable
-      // that may have been in URL when page loaded, so that it doesn't conflict with
-      // what's passed in with the data ajax parameter
+        // If ajaxUrl is blank, then we're using the current page URL,
+        // we need to strip out any query, sort, or page data controlled by dynatable
+        // that may have been in URL when page loaded, so that it doesn't conflict with
+        // what's passed in with the data ajax parameter
       } else {
         options.url = utility.refreshQueryString(window.location.href, {}, this.settings);
       }
@@ -480,20 +480,20 @@
 
       // Modify header cell
       $column
-        .attr('data-dynatable-column', id)
-        .addClass('dynatable-head');
+          .attr('data-dynatable-column', id)
+          .addClass('dynatable-head');
       if (settings.table.headRowClass) { $column.addClass(settings.table.headRowClass); }
 
       // Append column header to table
       if (!skipAppend) {
         var domPosition = position + 1,
             $sibling = obj.$element.find(settings.table.headRowSelector)
-              .children('th:nth-child(' + domPosition + '),td:nth-child(' + domPosition + ')').first(),
+                .children('th:nth-child(' + domPosition + '),td:nth-child(' + domPosition + ')').first(),
             columnsAfter = columns.slice(position + 1, columns.length);
 
         if ($sibling.length) {
           $sibling.before($column);
-        // sibling column doesn't yet exist (maybe this is the last column in the header row)
+          // sibling column doesn't yet exist (maybe this is the last column in the header row)
         } else {
           obj.$element.find(settings.table.headRowSelector).append($column);
         }
@@ -541,7 +541,7 @@
 
     this.removeFromTable = function(columnId) {
       obj.$element.find(settings.table.headRowSelector).children('[data-dynatable-column="' + columnId + '"]').first()
-        .remove();
+          .remove();
     };
 
     this.removeFromArray = function(index) {
@@ -564,9 +564,9 @@
       // in order to avoid errors with mismatched attribute names when loading cached `dataset.records` array
       var increment = obj.$element.find(settings.table.headRowSelector).children('th[data-dynatable-generated]').length;
       return $cell
-        .attr('data-dynatable-column', 'dynatable-generated-' + increment) //+ utility.randomHash(),
-        .attr('data-dynatable-no-sort', 'true')
-        .attr('data-dynatable-generated', increment);
+          .attr('data-dynatable-column', 'dynatable-generated-' + increment) //+ utility.randomHash(),
+          .attr('data-dynatable-no-sort', 'true')
+          .attr('data-dynatable-generated', increment);
     };
   };
 
@@ -743,7 +743,7 @@
           options.pageUpperBound = bounds[1];
           pageTemplate = settings.inputs.recordCountPageBoundTemplate;
 
-        // Else if currently displayed records are the entire collection
+          // Else if currently displayed records are the entire collection
         } else if (options.recordsShown === options.recordsQueryCount) {
           pageTemplate = settings.inputs.recordCountPageUnboundedTemplate;
         }
@@ -776,11 +776,11 @@
 
     this.create = function() {
       var $processing = $('<div></div>', {
-            html: '<span>' + settings.inputs.processingText + '</span>',
-            id: 'dynatable-processing-' + obj.element.id,
-            'class': 'dynatable-processing',
-            style: 'position: absolute; display: none;'
-          });
+        html: '<span>' + settings.inputs.processingText + '</span>',
+        id: 'dynatable-processing-' + obj.element.id,
+        'class': 'dynatable-processing',
+        style: 'position: absolute; display: none;'
+      });
 
       return $processing;
     };
@@ -795,11 +795,11 @@
           height = $covered.outerHeight(), width = $covered.outerWidth();
 
       $processing
-        .offset({left: offset.left, top: offset.top})
-        .width(width)
-        .height(height)
+          .offset({left: offset.left, top: offset.top})
+          .width(width)
+          .height(height)
       $span
-        .offset({left: offset.left + ( (width - spanWidth) / 2 ), top: offset.top + ( (height - spanHeight) / 2 )});
+          .offset({left: offset.left + ( (width - spanWidth) / 2 ), top: offset.top + ( (height - spanHeight) / 2 )});
 
       return $processing;
     };
@@ -841,7 +841,7 @@
           newParams,
           cacheStr,
           cache,
-          // replaceState on initial load, then pushState after that
+      // replaceState on initial load, then pushState after that
           firstPush = !(window.history.state && window.history.state.dynatable),
           pushFunction = firstPush ? 'replaceState' : 'pushState';
 
@@ -920,6 +920,18 @@
       if (index === -1) { sortsKeys.push(attr); }
       return dt;
     };
+
+    this.unshift = function (attr, direction) {
+      var sortsKeys = settings.dataset.sortsKeys,
+          index = $.inArray(attr, sortsKeys);
+      settings.dataset.sorts[attr] = direction;
+      obj.$element.trigger('dynatable:sorts:added', [attr, direction]);
+      if (index !== -1) {
+        sortsKeys.splice(index, 1);
+      }
+      sortsKeys.unshift(attr);
+      return dt;
+    }
 
     this.remove = function(attr) {
       var sortsKeys = settings.dataset.sortsKeys,
@@ -1079,14 +1091,14 @@
             obj.sorts.add(column.sorts[i], -1);
           }
           this.appendArrowDown($link);
-        // If descending, remove sort
+          // If descending, remove sort
         } else {
           for (var i = 0, len = column.sorts.length; i < len; i++) {
             obj.sorts.remove(column.sorts[i]);
           }
           this.removeArrow($link);
         }
-      // Otherwise, if not already set, set to ascending
+        // Otherwise, if not already set, set to ascending
       } else {
         for (var i = 0, len = column.sorts.length; i < len; i++) {
           obj.sorts.add(column.sorts[i], 1);
@@ -1195,13 +1207,13 @@
             };
 
         $this
-          .attr('data-dynatable-query', query)
-          .bind(event, queryFunction)
-          .bind('keypress', function(e) {
-            if (e.which == 13) {
-              queryFunction.call(this, e);
-            }
-          });
+            .attr('data-dynatable-query', query)
+            .bind(event, queryFunction)
+            .bind('keypress', function(e) {
+              if (e.which == 13) {
+                queryFunction.call(this, e);
+              }
+            });
 
         if (settings.dataset.queries[query]) { $this.val(decodeURIComponent(settings.dataset.queries[query])); }
       });
@@ -1256,15 +1268,15 @@
           }).append($search);
 
       $search
-        .bind(settings.inputs.queryEvent, function() {
-          obj.queries.runSearch($(this).val());
-        })
-        .bind('keypress', function(e) {
-          if (e.which == 13) {
+          .bind(settings.inputs.queryEvent, function() {
             obj.queries.runSearch($(this).val());
-            e.preventDefault();
-          }
-        });
+          })
+          .bind('keypress', function(e) {
+            if (e.which == 13) {
+              obj.queries.runSearch($(this).val());
+              e.preventDefault();
+            }
+          });
       return $searchSpan;
     };
 
@@ -1327,9 +1339,9 @@
 
     this.create = function() {
       var $select = $('<select>', {
-            id: 'dynatable-per-page-' + obj.element.id,
-            'class': 'dynatable-per-page-select'
-          });
+        id: 'dynatable-per-page-' + obj.element.id,
+        'class': 'dynatable-per-page-select'
+      });
 
       for (var i = 0, len = settings.dataset.perPageOptions.length; i < len; i++) {
         var number = settings.dataset.perPageOptions[i],
@@ -1373,7 +1385,7 @@
     };
 
     this.create = function() {
-      var pageLinks = '<ul id="' + 'dynatable-pagination-links-' + obj.element.id + '" class="' + settings.inputs.paginationClass + '">',
+      var pageLinks = '<' + settings.inputs.paginationWrapName + ' id="' + 'dynatable-pagination-links-' + obj.element.id + '" class="' + settings.inputs.paginationClass + '">',
           pageLinkClass = settings.inputs.paginationLinkClass,
           activePageClass = settings.inputs.paginationActiveClass,
           disabledPageClass = settings.inputs.paginationDisabledClass,
@@ -1386,7 +1398,9 @@
             (pages + 1) - settings.inputs.paginationGap[3]
           ];
 
-      pageLinks += '<li><span>' + settings.inputs.pageText + '</span></li>';
+      if (pages <= 1) {
+        return '';
+      }
 
       for (var i = 1; i <= pages; i++) {
         if ( (i > breaks[0] && i < breaks[1]) || (i > breaks[2] && i < breaks[3])) {
@@ -1405,7 +1419,7 @@
           breakIndex = $.inArray(i, breaks);
           nextBreak = breaks[breakIndex + 1];
           if (breakIndex > 0 && i !== 1 && nextBreak && nextBreak > (i + 1)) {
-            var ellip = '<li><span class="dynatable-page-break">&hellip;</span></li>';
+            var ellip = '<span class="dynatable-page-break">&hellip;</span>';
             li = breakIndex < 2 ? ellip + li : li + ellip;
           }
 
@@ -1422,7 +1436,7 @@
         }
       }
 
-      pageLinks += '</ul>';
+      pageLinks += '</' + settings.inputs.paginationWrapName + '>';
 
       // only bind page handler to non-active and non-disabled page links
       var selector = '#dynatable-pagination-links-' + obj.element.id + ' a.' + pageLinkClass + ':not(.' + activePageClass + ',.' + disabledPageClass + ')';
@@ -1442,18 +1456,15 @@
     };
 
     this.buildLink = function(page, label, linkClass, conditional, conditionalClass) {
-      var link = '<a data-dynatable-page=' + page + ' class="' + linkClass,
-          li = '<li';
+      var link = '<a data-dynatable-page=' + page + ' class="' + linkClass;
 
       if (conditional) {
         link += ' ' + conditionalClass;
-        li += ' class="' + conditionalClass + '"';
       }
 
       link += '">' + label + '</a>';
-      li += '>' + link + '</li>';
 
-      return li;
+      return link;
     };
 
     this.attach = function() {
@@ -1476,9 +1487,9 @@
       camelCase: function(text) {
         text = this.trimDash(text);
         return text
-          .replace(/(\-[a-zA-Z])/g, function($1){return $1.toUpperCase().replace('-','');})
-          .replace(/([A-Z])([A-Z]+)/g, function($1,$2,$3){return $2 + $3.toLowerCase();})
-          .replace(/^[A-Z]/, function($1){return $1.toLowerCase();});
+            .replace(/(\-[a-zA-Z])/g, function($1){return $1.toUpperCase().replace('-','');})
+            .replace(/([A-Z])([A-Z]+)/g, function($1,$2,$3){return $2 + $3.toLowerCase();})
+            .replace(/^[A-Z]/, function($1){return $1.toLowerCase();});
       },
       dashed: function(text) {
         text = this.trimDash(text);
@@ -1532,13 +1543,13 @@
           } else {
             hash[k] = [v];
           }
-        // If subsequent entry with this name and not array
+          // If subsequent entry with this name and not array
         } else if (typeof hash[k] === "string") {
           hash[k] = v;  // replace it
-        // modified to add support for objects
+          // modified to add support for objects
         } else if (typeof hash[k] === "object") {
           hash[k] = $.extend({}, hash[k], v);
-        // If subsequent entry with this name and is array
+          // If subsequent entry with this name and is array
         } else {
           hash[k].push(v);
         }
@@ -1560,7 +1571,7 @@
           // Skip over parameters matching attributes for disabled features (i.e. leave them untouched),
           // because if the feature is turned off, then parameter name is a coincidence and it's unrelated to dynatable.
           if (
-            (!settings.features.sort && attr == "sorts") ||
+              (!settings.features.sort && attr == "sorts") ||
               (!settings.features.paginate && _this.anyMatch(attr, ["page", "perPage", "offset"], function(attr, param) { return attr == param; }))
           ) {
             continue;
