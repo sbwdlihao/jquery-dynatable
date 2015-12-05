@@ -103,6 +103,7 @@
       ajaxOnLoad: false,
       ajaxMethod: 'GET',
       ajaxDataType: 'json',
+      ajaxData: {},
       totalRecordCount: null,
       queries: {},
       queryRecordCount: null,
